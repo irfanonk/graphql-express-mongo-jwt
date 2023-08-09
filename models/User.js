@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    otpBase32: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

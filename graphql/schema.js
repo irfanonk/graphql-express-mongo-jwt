@@ -5,7 +5,14 @@ const { GraphQLSchema, GraphQLObjectType } = require("graphql");
 const { users, user } = require("./queries");
 
 // Import mutations
-const { register, login, updatePassword } = require("./mutations");
+const {
+  register,
+  login,
+  updatePassword,
+  generateOtp,
+  enableOtp,
+  disableOtp,
+} = require("./mutations");
 
 // Define QueryType
 const QueryType = new GraphQLObjectType({
@@ -22,6 +29,9 @@ const MutationType = new GraphQLObjectType({
     register,
     login,
     updatePassword,
+    generateOtp,
+    enableOtp,
+    disableOtp,
   },
 });
 
