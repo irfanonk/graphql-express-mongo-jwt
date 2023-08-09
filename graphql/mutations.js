@@ -60,7 +60,12 @@ const login = {
       throw new Error("Invalid credentials");
     }
 
-    const token = createJwtToken(user);
+    let valid = false;
+    if (!user.mfa) {
+      valid = true;
+    }
+
+    const token = createJwtToken(user, valid);
     return token;
   },
 };
@@ -105,7 +110,7 @@ const updatePassword = {
 };
 const generateOtp = {
   type: GraphQLString,
-  description: "Login user",
+  description: "Generate Otp",
   args: {
     email: { type: GraphQLString },
   },
@@ -147,7 +152,7 @@ const generateOtp = {
 
 const enableOtp = {
   type: GraphQLString,
-  description: "Login user",
+  description: "Enable Otp",
   args: {
     email: { type: GraphQLString },
     code: { type: GraphQLString },
@@ -177,7 +182,6 @@ const enableOtp = {
     });
 
     const delta = totp.validate({ token: code, window: 1 });
-    console.log("resolve  delta:", delta);
     if (delta === null) {
       throw new Error("Invalid otp code");
     }
@@ -197,7 +201,7 @@ const enableOtp = {
 };
 const disableOtp = {
   type: GraphQLString,
-  description: "Login user",
+  description: "Disable Otp",
   args: {
     email: { type: GraphQLString },
   },
@@ -227,6 +231,49 @@ const disableOtp = {
     return response;
   },
 };
+const verifyOtp = {
+  type: GraphQLString,
+  description: "Enable Otp",
+  args: {
+    email: { type: GraphQLString },
+    code: { type: GraphQLString },
+  },
+  async resolve(parent, args) {
+    const { email, code } = args;
+    if (!email || !code) {
+      throw new Error("Absent params");
+    }
+    const user = await User.findOne({ email });
+
+    if (!user.otpBase32) {
+      throw new Error("User has no otp");
+    }
+
+    if (!user.mfa) {
+      throw new Error("User has no otp");
+    }
+
+    const totp = new OTPAuth.TOTP({
+      issuer: "Test App",
+      label: email,
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+      secret: user.otpBase32,
+    });
+
+    const delta = totp.validate({ token: code, window: 1 });
+
+    if (delta === null) {
+      throw new Error("Invalid otp code");
+    }
+
+    const valid = true;
+
+    const token = createJwtToken(user, valid);
+    return token;
+  },
+};
 
 module.exports = {
   register,
@@ -235,4 +282,5 @@ module.exports = {
   generateOtp,
   enableOtp,
   disableOtp,
+  verifyOtp,
 };

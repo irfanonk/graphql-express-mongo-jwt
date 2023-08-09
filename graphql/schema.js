@@ -12,6 +12,7 @@ const {
   generateOtp,
   enableOtp,
   disableOtp,
+  verifyOtp,
 } = require("./mutations");
 
 // Define QueryType
@@ -32,6 +33,7 @@ const MutationType = new GraphQLObjectType({
     generateOtp,
     enableOtp,
     disableOtp,
+    verifyOtp,
   },
 });
 
