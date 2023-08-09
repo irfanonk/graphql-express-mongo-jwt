@@ -24,9 +24,6 @@ const register = {
   async resolve(parent, args) {
     const { username, email, password, displayName } = args;
 
-    if (!username || !email || !password) {
-      throw new Error("Absent credentials");
-    }
     const hashedPassword = await passwordHash(password);
     const user = new User({
       username,
@@ -35,7 +32,11 @@ const register = {
       displayName,
     });
     await user.save();
-    const token = createJwtToken(user);
+
+    const { password: _, ...userData } = user._doc;
+    const valid = true;
+
+    const token = createJwtToken(userData, valid);
     return token;
   },
 };
@@ -65,7 +66,9 @@ const login = {
       valid = true;
     }
 
-    const token = createJwtToken(user, valid);
+    const { password: _, ...userData } = user._doc;
+
+    const token = createJwtToken(userData, valid);
     return token;
   },
 };
